@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use Inertia\Inertia;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class AdminAuthController extends Controller
 {
     public function showLoginForm()
     {
-        return inertia::render('Admin/Auth/Login');
+        return Inertia::render('Admin/Auth/Login');
     }
 
     public function login(Request $request)

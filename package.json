@@ -18,6 +18,7 @@
         "vue": "^3.2.41"
     },
     "dependencies": {
-        "@inertiajs/vue3": "^1.0.14"
+        "@inertiajs/vue3": "^1.0.14",
+        "flowbite": "^2.2.1"
     }
 }
