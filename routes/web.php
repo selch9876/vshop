@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +46,9 @@ Route::group(['prefix' => 'admin', 'middleware' => 'redirectAdmin'], function ()
 });
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
+
+    // Product Routes
+    Route::get('/products', [ProductController::class, 'index'])->name('admin.products.index');
 });
 
 require __DIR__.'/auth.php';
