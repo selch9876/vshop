@@ -21,9 +21,8 @@ return new class extends Migration
             $table->string('zipcode', 45);
             $table->boolean('isMain')->nullable()->default(true);
             $table->string('country_code', 3);
-            $table->foreignIdFor('user_id')
-                    ->references('id')
-                    ->on('users');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->constraint()->onDelete('cascade');
             $table->timestamps();
         });
     }
