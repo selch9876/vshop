@@ -1,4 +1,90 @@
+<script setup>
+import {usePage} from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { ElMessageBox } from 'element-plus';
+
+
+const products = usePage().props.products;
+const isAddProducts = ref(false);
+const dialogVisible = ref(false);
+const editMode = ref(false);
+// Open add modal
+const openAddModal = () => {
+    isAddProducts.value = true;
+    dialogVisible.value = true;
+    editMode.value = false;
+}
+
+const openEditModal = () => {
+    editMode.value = true;
+    isAddProducts.value = false;
+    dialogVisible.value = true;
+}
+</script>
+
 <template>
+
+    <!--Add or edit form-->
+    <el-dialog
+    v-model="dialogVisible"
+    :title="editMode ? 'Edit Product' : 'Add Product'"
+    width="30%"
+    :before-close="handleClose"
+  >
+    <!-- form start -->
+        <section class="bg-white dark:bg-gray-900">
+            <div class="py-8 px-4 mx-auto max-w-2xl lg:py-16">
+                <h2 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Add a new product</h2>
+                <form action="#">
+                    <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
+                        <div class="sm:col-span-2">
+                            <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Name</label>
+                            <input type="text" name="name" id="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Type product name" required="">
+                        </div>
+                        <div class="w-full">
+                            <label for="brand" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Brand</label>
+                            <input type="text" name="brand" id="brand" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Product brand" required="">
+                        </div>
+                        <div class="w-full">
+                            <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Price</label>
+                            <input type="number" name="price" id="price" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="$2999" required="">
+                        </div>
+                        <div>
+                            <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category</label>
+                            <select id="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                <option selected="">Select category</option>
+                                <option value="TV">TV/Monitors</option>
+                                <option value="PC">PC</option>
+                                <option value="GA">Gaming/Console</option>
+                                <option value="PH">Phones</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="item-weight" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Item Weight (kg)</label>
+                            <input type="number" name="item-weight" id="item-weight" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="12" required="">
+                        </div> 
+                        <div class="sm:col-span-2">
+                            <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+                            <textarea id="description" rows="8" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Your description here"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800">
+                        Add product
+                    </button>
+                </form>
+            </div>
+          </section>
+    <!-- form end -->
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="dialogVisible = false">
+          Confirm
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+<!-- end dialog box -->
     <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
         <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
             <!-- Start coding here -->
@@ -24,7 +110,7 @@
                     </div>
                     <div
                         class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-                        <button type="button"
+                        <button type="button" @click="openAddModal"
                             class="flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
                             <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -120,7 +206,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
+                <div class="">
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
@@ -165,8 +251,8 @@
                                                     class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
                                             </li>
                                             <li>
-                                                <a href="#"
-                                                    class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
+                                                <button @click="openEditModal"
+                                                    class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</button>
                                             </li>
                                         </ul>
                                         <div class="py-1">
@@ -241,8 +327,3 @@
     </div>
     </section>
 </template>
-<script setup>
-import {usePage} from '@inertiajs/vue3';
-
-const products = usePage().props.products;
-</script>
