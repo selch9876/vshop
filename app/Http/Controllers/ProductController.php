@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
+use App\Models\Category;
 use Inertia\Inertia;
 use App\Models\Product;
 use App\Models\ProductImage;
@@ -13,8 +15,12 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::get();
+        $categories = Category::get();
+        $brands = Brand::get();
         return Inertia::render('Admin/Product/Index', [
-            'products' => $products
+            'products' => $products,
+            'categories' => $categories,
+            'brands' => $brands
         ]);
     }
 
@@ -31,7 +37,7 @@ class ProductController extends Controller
 
         // Check if product has images
 
-        if ($product->hasFile('product_images')) {
+        if ($request->hasFile('product_images')) {
             $productImages = $request->file('product_images');
             foreach ($productImages as $key => $image) {
                 # generate unique name

@@ -2,9 +2,13 @@
 import {router, usePage} from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { ElMessageBox } from 'element-plus';
+import { Plus } from '@element-plus/icons-vue';
+
 
 
 const products = usePage().props.products;
+const categories = usePage().props.categories;
+const brands = usePage().props.brands;
 const isAddProducts = ref(false);
 const dialogVisible = ref(false);
 const editMode = ref(false);
@@ -22,9 +26,28 @@ const category_id = ref('');
 const brand_id = ref('');
 const inStock = ref('');
 
-const productImages = ref([]);
 
 // end data
+
+// upload multiple images
+const productImages = ref([]);
+const dialogImageUrl = ref('');
+
+const handleFileChange = (file) => {
+    productImages.value.push(file)
+}
+
+const handlePictureCardPreview = (file) => {
+  dialogImageUrl.value = file.url
+  dialogVisible.value = true
+}
+
+const handleRemove = (file) => {
+  console.log(file)
+}
+//end images
+
+
 // Open add modal
 const openAddModal = () => {
     isAddProducts.value = true;
@@ -33,7 +56,7 @@ const openAddModal = () => {
 }
 // add product method
 const addProduct = async () => {
-    const formData = new formData();
+    const formData = new FormData();
 
     formData.append('title', title.value);
     formData.append('price', price.value);
@@ -49,22 +72,33 @@ const addProduct = async () => {
     }
 
     try {
-        await router.post('product/store', formData, {
+        await router.post('products/store', formData, {
             onSuccess: page => {
                 Swal.fire({
                     toast: true,
                     icon: 'success',
                     position: 'top-end',
                     showConfirmationButton: false,
-                    title: page.props.flash.succes
+                    title: page.props.flash.success
                 })
+                dialogVisible.value = false;
+                resetFormData();
             },
         });
     } catch (error) {
         console.log(error);
     }
 }
-
+//reset data after added
+const resetFormData = () => {
+    id.value = '';
+    title.value = '';
+    price.value = '';
+    quantity.value = '';
+    description.value = '';
+    productImages.value = [];
+    dialogImageUrl.value = ''
+};
 
 
 
@@ -88,7 +122,7 @@ const openEditModal = (product) => {
         <section class="bg-white dark:bg-gray-900">
             <div class="py-8 px-4 mx-auto max-w-2xl lg:py-16">
                 
-                <form action="#">
+                <form @submit.prevent="addProduct()">
                     <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
                         <div class="sm:col-span-2">
                             <label for="title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Name</label>
@@ -108,31 +142,35 @@ const openEditModal = (product) => {
                         </div>
                         <div>
                             <label for="brand_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Brand</label>
-                            <select id="brand_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                <option selected="">Select Brand</option>
-                                <option value="TV">TV/Monitors</option>
-                                <option value="PC">PC</option>
-                                <option value="GA">Gaming/Console</option>
-                                <option value="PH">Phones</option>
+                            <select v-model="brand_id" id="brand_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                <option v-for="brand in brands" :key="brand.id" :value="brand.id">{{brand.name}}</option>
                             </select>
                         </div>
                         <div>
                             <label for="category_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category</label>
-                            <select id="category_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                <option selected="">Select Category</option>
-                                <option value="TV">TV/Monitors</option>
-                                <option value="PC">PC</option>
-                                <option value="GA">Gaming/Console</option>
-                                <option value="PH">Phones</option>
+                            <select v-model="category_id" id="category_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                <option v-for="category in categories" :key="category.id" :value="category.id">{{category.name}}</option>
                             </select>
                         </div>
                          
                         <div class="sm:col-span-2">
                             <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
-                            <textarea v-model="published" id="description" rows="8" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Your description here"></textarea>
+                            <textarea v-model="description" id="description" rows="8" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Your description here"></textarea>
+                        </div>
+                        <!--Add multiple images-->
+                        <div class="sm:col-span-2">
+                            <el-upload
+                                v-model:file-list="productImages"
+                                list-type="picture-card" multiple
+                                :on-preview="handlePictureCardPreview"
+                                :on-remove="handleRemove"
+                                :on-change="handleFileChange"
+                            >
+                                <el-icon><Plus /></el-icon>
+                            </el-upload>
                         </div>
                     </div>
-                    <button type="submit" class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800">
+                    <button @click="addProduct" type="submit" class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-grey-500 bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800">
                         Add product
                     </button>
                 </form>
