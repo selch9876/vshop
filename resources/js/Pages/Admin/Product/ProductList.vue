@@ -59,7 +59,7 @@ const openEditModal = (product) => {
     price.value = product.price;
     quantity.value = product.quantity;
     description.value = product.description;
-    productImages.value = product.productImages;
+    product_images.value = product.product_images;
     brand_id.value = product.brand_id;
     category_id.value = product.category_id;
 }
@@ -114,6 +114,27 @@ const resetFormData = () => {
     productImages.value = [];
     dialogImageUrl.value = ''
 };
+
+//delete sigal product image 
+
+const deleteImage = async (pimage, index) => {
+    try {
+        await router.delete('/admin/products/image/' + pimage.id, {
+            onSuccess: (page) => {
+                product_images.value.splice(index, 1);
+                Swal.fire({
+                    toast: true,
+                    icon: "success",
+                    position: "top-end",
+                    showConfirmButton: false,
+                    title: page.props.flash.success
+                });
+            }
+        })
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 //update product method
 const updateProduct = async () => {
@@ -245,7 +266,7 @@ const deleteProduct = (product, index) => {
                     </div>
 
                     <!-- list of images for selected product -->
-                    <div class="flex flex-nowrap mb-8 ">
+                    <div class="flex flex-nowrap mb-8 mt-4">
                         <div v-for="(pimage, index) in product_images" :key="pimage.id" class="relative w-32 h-32 ">
                             <img class="w-24 h-20 rounded" :src="`/${pimage.image}`" alt="">
                             <span
