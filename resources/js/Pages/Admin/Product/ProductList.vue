@@ -47,6 +47,22 @@ const handleRemove = (file) => {
 }
 //end images
 
+// Open Edit Modal
+const openEditModal = (product) => {
+    editMode.value = true;
+    isAddProducts.value = false;
+    dialogVisible.value = true;
+
+    // Update Data
+    id.value = product.id;
+    title.value = product.title;
+    price.value = product.price;
+    quantity.value = product.quantity;
+    description.value = product.description;
+    productImages.value = product.productImages;
+    brand_id.value = product.brand_id;
+    category_id.value = product.category_id;
+}
 
 // Open add modal
 const openAddModal = () => {
@@ -57,7 +73,6 @@ const openAddModal = () => {
 // add product method
 const addProduct = async () => {
     const formData = new FormData();
-
     formData.append('title', title.value);
     formData.append('price', price.value);
     formData.append('quantity', quantity.value);
@@ -100,12 +115,74 @@ const resetFormData = () => {
     dialogImageUrl.value = ''
 };
 
+//update product method
+const updateProduct = async () => {
+    const formData = new FormData();
+    formData.append('title', title.value);
+    formData.append('price', price.value);
+    formData.append('quantity', quantity.value);
+    formData.append('description', description.value);
+    formData.append('category_id', category_id.value);
+    formData.append('brand_id', brand_id.value);
+    formData.append("_method", 'PUT');
+    // Append product images to the FormData
+    for (const image of productImages.value) {
+        formData.append('product_images[]', image.raw);
+    }
+
+    try {
+        await router.post('products/update/' + id.value, formData, {
+            onSuccess: (page) => {
+                dialogVisible.value = false;
+                resetFormData();
+                Swal.fire({
+                    toast: true,
+                    icon: "success",
+                    position: "top-end",
+                    showConfirmButton: false,
+                    title: page.props.flash.success
+                });
+            }
+        })
+    } catch (err) {
+        console.log(err)
+    }
+}
 
 
-const openEditModal = (product) => {
-    editMode.value = true;
-    isAddProducts.value = false;
-    dialogVisible.value = true;
+
+//delete product method 
+const deleteProduct = (product, index) => {
+    Swal.fire({
+        title: 'Are you Sure',
+        text: "This actions cannot undo!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        cancelButtonText: 'no',
+        confirmButtonText: 'yes, delete!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            try {
+                router.delete('products/destory/' + product.id, {
+                    onSuccess: (page) => {
+                        this.delete(product, index);
+                        Swal.fire({
+                            toast: true,
+                            icon: "success",
+                            position: "top-end",
+                            showConfirmButton: false,
+                            title: page.props.flash.success
+                        });
+                    }
+                })
+            } catch (err) {
+                console.log(err)
+            }
+        }
+    })
+
 }
 </script>
 
@@ -131,10 +208,6 @@ const openEditModal = (product) => {
                         <div class="sm:col-span-2">
                             <label for="quantity" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Quantity</label>
                             <input v-model="quantity" type="number" name="quantity" id="quantity" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="" required="">
-                        </div>
-                        <div class="sm:col-span-2">
-                            <label for="published" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Published</label>
-                            <input v-model="published" type="text" name="published" id="published" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="" required="">
                         </div>
                         <div class="w-full">
                             <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Price</label>
@@ -170,6 +243,20 @@ const openEditModal = (product) => {
                             </el-upload>
                         </div>
                     </div>
+
+                    <!-- list of images for selected product -->
+                    <div class="flex flex-nowrap mb-8 ">
+                        <div v-for="(pimage, index) in product_images" :key="pimage.id" class="relative w-32 h-32 ">
+                            <img class="w-24 h-20 rounded" :src="`/${pimage.image}`" alt="">
+                            <span
+                                class="absolute top-0 right-8 transform -translate-y-1/2 w-3.5 h-3.5 bg-red-400 border-2 border-white dark:border-gray-800 rounded-full">
+                                <span @click="deleteImage(pimage, index)"
+                                    class="text-white text-xs font-bold absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">x</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- end -->
                     <button @click="addProduct" type="submit" class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-grey-500 bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800">
                         Add product
                     </button>
@@ -308,7 +395,7 @@ const openEditModal = (product) => {
                         </div>
                     </div>
                 </div>
-                <div class="">
+                <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
@@ -316,26 +403,44 @@ const openEditModal = (product) => {
                                 <th scope="col" class="px-4 py-3">Category</th>
                                 <th scope="col" class="px-4 py-3">Brand</th>
                                 <th scope="col" class="px-4 py-3">Quantity</th>
+                                <th scope="col" class="px-4 py-3">Price</th>
                                 <th scope="col" class="px-4 py-3">Stock</th>
                                 <th scope="col" class="px-4 py-3">Publish</th>
-                                <th scope="col" class="px-4 py-3">Price</th>
                                 <th scope="col" class="px-4 py-3">
                                     <span class="sr-only">Actions</span>
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="product in products" class="border-b dark:border-gray-700" :key="product.id">
+                            <tr v-for="(product, index) in products" :key="product.id"
+                                class="border-b dark:border-gray-700">
                                 <th scope="row"
-                                    class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{product.title}}</th>
-                                <td class="px-4 py-3">{{product.category_id}}</td>
-                                <td class="px-4 py-3">{{product.brand_id}}</td>
-                                <td class="px-4 py-3">{{product.quantity}}</td>
-                                <td class="px-4 py-3">{{product.inStock}}</td>
-                                <td class="px-4 py-3">{{product.published}}</td>
-                                <td class="px-4 py-3">{{product.price}}</td>
+                                    class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ product.title }}</th>
+                                <td class="px-4 py-3">{{ product.category.name }}</td>
+                                <td class="px-4 py-3">{{ product.brand.name }}</td>
+                                <td class="px-4 py-3">{{ product.quantity }}</td>
+                                <td class="px-4 py-3">${{ product.price }}</td>
+
+                                <td class="px-4 py-3">
+                                    <span v-if="product.inStock == 0"
+                                        class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">inStock</span>
+                                    <span v-else
+                                        class="bg-red-100 text-red-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Out
+                                        of Stock</span>
+
+                                </td>
+                                <td class="px-4 py-3">
+                                    <button v-if="product.published == 0" type="button"
+                                        class="px-3 py-2 text-xs font-medium text-center text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Published</button>
+                                    <button v-else type="button"
+                                        class="px-3 py-2 text-xs font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800">UnPublished</button>
+
+                                </td>
+
                                 <td class="px-4 py-3 flex items-center justify-end">
-                                    <button id="apple-imac-27-dropdown-button" data-dropdown-toggle="apple-imac-27-dropdown"
+
+                                    <button :id="`${product.id}-button`" :data-dropdown-toggle="`${product.id}`"
                                         class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
                                         type="button">
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
@@ -344,32 +449,27 @@ const openEditModal = (product) => {
                                                 d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
                                         </svg>
                                     </button>
-                                    <div id="apple-imac-27-dropdown"
+                                    <div :id="`${product.id}`"
                                         class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
                                         <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                                            aria-labelledby="apple-imac-27-dropdown-button">
+                                            :aria-labelledby="`${product.id}-button`">
+
                                             <li>
-                                                <a href="#"
-                                                    class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
-                                            </li>
-                                            <li>
-                                                <button @click="openEditModal"
-                                                    class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</button>
+                                                <a href="#" @click="openEditModal(product)"
+                                                    class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
                                             </li>
                                         </ul>
                                         <div class="py-1">
-                                            <a href="#"
+                                            <a href="#" @click="deleteProduct(product, index)"
                                                 class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
-                            
-                                
-        
-                    </tbody>
-                </table>
-            </div>
+
+                        </tbody>
+                    </table>
+                </div>
             <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
                 aria-label="Table navigation">
                 <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
