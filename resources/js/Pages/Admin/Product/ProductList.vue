@@ -6,7 +6,9 @@ import { Plus } from '@element-plus/icons-vue';
 
 
 
-const products = usePage().props.products;
+defineProps({
+    products: Array
+})
 const categories = usePage().props.categories;
 const brands = usePage().props.brands;
 const isAddProducts = ref(false);
@@ -186,7 +188,7 @@ const deleteProduct = (product, index) => {
     }).then((result) => {
         if (result.isConfirmed) {
             try {
-                router.delete('products/destory/' + product.id, {
+                router.delete('products/destroy/' + product.id, {
                     onSuccess: (page) => {
                         this.delete(product, index);
                         Swal.fire({
@@ -220,7 +222,7 @@ const deleteProduct = (product, index) => {
         <section class="bg-white dark:bg-gray-900">
             <div class="py-8 px-4 mx-auto max-w-2xl lg:py-16">
                 
-                <form @submit.prevent="addProduct()">
+                <form @submit.prevent="editMode ? updateProduct() : addProduct()">
                     <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
                         <div class="sm:col-span-2">
                             <label for="title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Name</label>
@@ -278,8 +280,9 @@ const deleteProduct = (product, index) => {
                     </div>
 
                     <!-- end -->
-                    <button @click="addProduct" type="submit" class="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-grey-500 bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800">
-                        Add product
+                    <button type="submit"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Submit
                     </button>
                 </form>
             </div>
